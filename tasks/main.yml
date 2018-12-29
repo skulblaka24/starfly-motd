@@ -1,0 +1,55 @@
+---
+# tasks file for motd
+
+- name: Check si motd existe
+  stat: 
+    path: /etc/motd
+  register: motd_result_motd_file
+
+- name: Check si motd.bak existe
+  stat: 
+    path: /etc/motd.bak
+  register: motd_result_motd_file_bak
+
+- name: Sauvegarde du vieux fichier motd
+  copy: 
+    remote_src: true 
+    src: /etc/motd
+    dest: /etc/motd.bak
+  when: 
+    - motd_result_motd_file.stat.exists
+    - motd_result_motd_file_bak.stat.exists == False
+
+- name: Supprime le fichier original
+  file:
+    path: /etc/motd
+    state: absent
+  when: motd_result_motd_file.stat.exists
+
+- name: Copie du premier fichier de configuration
+  copy:
+    src: dynmotd.sh.j2
+    dest: /etc/profile.d/dynmotd.sh
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copie du deuxième fichier de configuration
+  template:
+    src: dynmotd_hypriot.j2
+    dest: /usr/local/bin/dynmotd
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_lsb.id == 'Raspbian'
+
+- name: Copie du deuxième fichier de configuration
+  template:
+    src: dynmotd.j2
+    dest: /usr/local/bin/dynmotd
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_lsb.id == 'Debian' or ansible_distribution == 'Redhat'
+
+...

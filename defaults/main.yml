@@ -1,0 +1,5 @@
+---
+# defaults file for motd
+
+# motd_style_server: '   Serveur Docker'
+# motd_service: 'Starfly'
